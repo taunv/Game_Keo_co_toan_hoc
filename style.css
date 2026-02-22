@@ -1,16 +1,21 @@
 :root {
-    --red-team: #e74c3c;
-    --blue-team: #3498db;
-    --grass: #27ae60;
-    --sky: #87CEEB;
-    --ui-bg: rgba(255, 255, 255, 0.9);
+    --p1: #e74c3c;
+    --p2: #3498db;
+    --bg-sky: #87CEEB;
+    --bg-grass: #2ecc71;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: 'Roboto', sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Nunito', sans-serif; }
 
-body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
+/* KHÓA MÀN HÌNH TUYỆT ĐỐI */
+html, body {
+    width: 100%; height: 100%; 
+    overflow: hidden; 
+    position: fixed; /* Chặn cuộn trang trên iOS */
+    background: #000;
+    touch-action: none;
+}
 
-/* Xoay màn hình */
 #rotate-lock {
     position: fixed; inset: 0; background: #2c3e50; color: white;
     display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
@@ -23,88 +28,97 @@ body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
     #game-wrapper { display: none; }
 }
 
-/* Game Wrapper */
+/* GAME CONTAINER - Dùng 100dvh để fix lỗi thanh địa chỉ */
 #game-wrapper {
-    position: relative; width: 100%; height: 100%;
-    background: linear-gradient(to bottom, var(--sky) 0%, #fff 40%, var(--grass) 40%, #2ecc71 100%);
+    width: 100vw; height: 100dvh; 
+    position: absolute; top: 0; left: 0;
+    background: linear-gradient(to bottom, var(--bg-sky) 0%, #fff 45%, var(--bg-grass) 45%, #27ae60 100%);
 }
 
-canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+canvas { display: block; width: 100%; height: 100%; position: absolute; }
 
-/* UI Layer (Nổi lên trên Canvas) */
+/* Nút Fullscreen nhỏ góc dưới */
+#btn-fullscreen {
+    position: fixed; bottom: 5px; right: 5px; z-index: 200;
+    background: rgba(0,0,0,0.5); color: white; border: 1px solid white;
+    padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
+}
+
+/* UI LAYER - Layout Flexbox */
 .ui-layer {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; justify-content: space-between; pointer-events: none; /* Để click xuyên qua vùng trống */
+    display: flex; justify-content: space-between; pointer-events: none;
+    padding: 10px;
 }
 
-/* Khu vực người chơi */
-.player-ui {
-    width: 300px; height: 100%; padding: 10px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    pointer-events: auto; /* Cho phép bấm nút */
+/* Cột người chơi: Chiếm 25% chiều rộng mỗi bên */
+.player-col {
+    width: 28%; height: 100%;
+    display: flex; flex-direction: column; 
+    pointer-events: auto; /* Cho phép bấm */
+    gap: 10px;
+}
+
+/* Cột giữa (Đồng hồ): Chiếm phần còn lại */
+.center-col {
+    flex-grow: 1; display: flex; justify-content: center; align-items: flex-start;
+}
+#main-timer {
+    background: rgba(0,0,0,0.6); color: white; padding: 5px 15px;
+    border-radius: 20px; font-weight: 900; font-size: 1.2rem;
+    font-family: 'Titan One', cursive; border: 2px solid white;
 }
 
 /* Bảng Toán */
-.math-board {
-    background: white; border-radius: 15px; padding: 15px; text-align: center;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2); border: 4px solid #ccc; position: relative;
-    overflow: hidden;
+.math-card {
+    background: white; border-radius: 12px; padding: 10px; text-align: center;
+    border: 3px solid #ccc; position: relative; overflow: hidden;
+    flex: 0 0 auto; /* Không co giãn */
 }
-.p1-board { border-color: var(--red-team); }
-.p2-board { border-color: var(--blue-team); }
+.p1-card { border-color: var(--p1); }
+.p2-card { border-color: var(--p2); }
 
-.timer-bar { height: 6px; background: #eee; width: 100%; position: absolute; top: 0; left: 0; }
-.timer-bar div { height: 100%; width: 100%; transition: width 0.1s linear; }
-#p1-timer-fill { background: var(--red-team); }
-#p2-timer-fill { background: var(--blue-team); }
+.timer-line { height: 5px; background: #eee; width: 100%; position: absolute; top: 0; left: 0; }
+.timer-line div { height: 100%; width: 100%; transition: width 0.1s linear; }
+#p1-timer-bar { background: var(--p1); }
+#p2-timer-bar { background: var(--p2); }
 
-.question-text { font-family: 'Titan One', cursive; font-size: 2rem; color: #333; margin: 10px 0; }
-.answer-box { 
-    background: #f1f2f6; height: 50px; border-radius: 8px; 
-    font-size: 2rem; font-weight: bold; line-height: 50px; color: #2c3e50;
-    border-bottom: 3px solid #ddd;
-}
-
-/* Đồng hồ tổng */
-.center-clock {
-    padding-top: 10px;
-}
-#main-timer {
-    background: rgba(0,0,0,0.6); color: white; padding: 5px 20px;
-    border-radius: 20px; font-weight: bold; font-size: 1.5rem;
-    font-family: 'Titan One'; border: 2px solid white;
+.q-text { font-family: 'Titan One', cursive; font-size: 1.5rem; color: #333; margin: 5px 0; }
+.ans-box { 
+    background: #f1f2f6; height: 40px; border-radius: 6px; 
+    font-size: 1.5rem; font-weight: bold; line-height: 40px; color: #2c3e50;
+    border-bottom: 2px solid #ddd;
 }
 
-/* Bàn phím */
-.keypad {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    background: rgba(255,255,255,0.8); padding: 10px; border-radius: 15px;
+/* Bàn phím số: Co giãn tự động để lấp đầy khoảng trống dưới */
+.numpad {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    background: rgba(255,255,255,0.7); padding: 8px; border-radius: 12px;
+    flex: 1 1 auto; /* Tự động giãn chiều cao */
 }
-.keypad button {
-    background: white; border: none; height: 45px; border-radius: 8px;
-    font-size: 1.5rem; font-weight: bold; color: #555;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.15); cursor: pointer;
-    transition: transform 0.1s;
+.numpad button {
+    background: white; border: none; border-radius: 6px;
+    font-size: 1.2rem; font-weight: bold; color: #555;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.15); cursor: pointer;
+    touch-action: manipulation;
 }
-.keypad button:active { transform: translateY(3px); box-shadow: 0 0 0; }
-.btn-clear { background: #ff7675 !important; color: white !important; }
+.numpad button:active { transform: translateY(2px); box-shadow: none; }
+.btn-del { background: #ff7675 !important; color: white !important; }
 .btn-ok { background: #55efc4 !important; color: white !important; }
 
-/* Màn hình Start/End */
+/* Overlay */
 .overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     color: white; z-index: 100;
 }
 .hidden { display: none !important; }
-
-.game-title { font-family: 'Titan One'; font-size: 4rem; color: #f1c40f; text-shadow: 4px 4px 0 #d35400; margin-bottom: 10px; }
+.game-title { font-family: 'Titan One'; font-size: 3rem; color: #f1c40f; text-shadow: 3px 3px 0 #d35400; margin-bottom: 5px; }
 .btn-primary {
     background: linear-gradient(to bottom, #f1c40f, #f39c12);
-    border: none; padding: 15px 50px; border-radius: 50px;
-    font-size: 2rem; font-family: 'Titan One'; color: #c0392b;
-    cursor: pointer; box-shadow: 0 8px 0 #d35400; margin-top: 20px;
+    border: none; padding: 12px 40px; border-radius: 50px;
+    font-size: 1.5rem; font-family: 'Titan One'; color: #c0392b;
+    cursor: pointer; box-shadow: 0 6px 0 #d35400; margin-top: 20px;
 }
-.btn-primary:active { transform: translateY(4px); box-shadow: 0 4px 0 #d35400; }
 .pulse { animation: pulse 1s infinite; }
 @keyframes pulse { 0% {transform: scale(1)} 50% {transform: scale(1.05)} 100% {transform: scale(1)} }
